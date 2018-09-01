@@ -47,6 +47,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCING_DELAY 5
 
+#define UC_TU     UC(0x30C4) // ツ
+#define UC_MACRON UC(0x00af) // ¯
+#define UC_NO     UC(0x30CE) // ノ
+//(ノಠ益ಠ)ノ彡┻━┻
+
 /* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
 //#define LOCKING_SUPPORT_ENABLE
 /* Locking resynchronize hack */

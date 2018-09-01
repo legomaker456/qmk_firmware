@@ -66,15 +66,15 @@ led_setup_t leds_press_yellow_red[] = {
     { .end = 1 },
 };
 
-led_setup_t leds_press_ice_blue[] = {
-    { .hs = 0, .he = 100, .rs = 220, .re = 220, .gs = 243, .ge = 243, .bs = 255, .be = 255, .ef = EF_NONE },
-    { .hs = 0, .he = 100, .rs = 183, .re = 183, .gs = 119, .ge = 119, .bs = 92, .be = 92, .ef = EF_PRESS | EF_SUBTRACT },
+led_setup_t leds_press_red[] = {
+    { .hs = 0, .he = 100, .rs = 0, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_NONE },
+    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_PRESS },
     { .end = 1 },
 };
 
-led_setup_t leds_press[] = {
-    { .hs = 0, .he = 100, .rs = 0, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_NONE },
-    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_PRESS },
+led_setup_t leds_press_invert_red[] = {
+    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_NONE },
+    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_PRESS | EF_SUBTRACT },
     { .end = 1 },
 };
 
@@ -104,6 +104,18 @@ led_setup_t leds_america_scroll[] = {
   { .hs = 50,    .he = 66.67, .rs = 255, .re = 0, .gs = 0,   .ge = 0,   .bs = 0,   .be = 0,   .ef = EF_OVER | EF_SCR_R },
   { .hs = 66.67, .he = 83.33, .rs = 0, .re = 255, .gs = 0, .ge = 255, .bs = 0, .be = 255, .ef = EF_OVER | EF_SCR_R },
   { .hs = 83.33, .he = 100,   .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255, .be = 0, .ef = EF_OVER | EF_SCR_R },
+  { .end = 1 },
+};
+
+//MURICA
+led_setup_t leds_america_scroll_keypress[] = {
+  { .hs = 0,     .he = 16.67, .rs = 255, .re = 255,   .gs = 255, .ge = 255,   .bs = 255 , .be = 255,   .ef = EF_SCR_R },
+  { .hs = 16.67, .he = 33.33, .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255,   .be = 255, .ef = EF_SCR_R },
+  { .hs = 33.33, .he = 50,    .rs = 255, .re = 255,   .gs = 255, .ge = 255,   .bs = 255, .be = 255,   .ef = EF_SCR_R },
+  { .hs = 50,    .he = 66.67, .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255,   .be = 255, .ef = EF_SCR_R },
+  { .hs = 66.67, .he = 83.33, .rs = 255, .re = 255,   .gs = 255, .ge = 255,   .bs = 255, .be = 255,   .ef = EF_SCR_R },
+  { .hs = 83.33, .he = 100,   .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255, .be = 255,   .ef = EF_SCR_R },
+  { .hs = 0,     .he = 100,   .rs = 255, .re = 255, .gs = 0,   .ge = 0,   .bs = 0, .be = 0,   .ef = EF_PRESS | EF_OVER},
   { .end = 1 },
 };
 
@@ -166,18 +178,31 @@ led_setup_t leds_rainbow_s[] = {
     { .end = 1 },
 };
 
+led_setup_t leds_rainbow_s_touch[] = {
+    { .hs = 0,      .he = 16.67,  .rs = 255, .re = 255, .gs = 0,   .ge = 255, .bs = 0,   .be = 0,   .ef = EF_OVER | EF_SCR_R },
+    { .hs = 16.67,  .he = 33.33,  .rs = 255, .re = 0,   .gs = 255, .ge = 255, .bs = 0,   .be = 0,   .ef = EF_OVER | EF_SCR_R },
+    { .hs = 33.33,  .he = 50,     .rs = 0,   .re = 0,   .gs = 255, .ge = 255, .bs = 0,   .be = 255, .ef = EF_OVER | EF_SCR_R },
+    { .hs = 50,     .he = 66.67,  .rs = 0,   .re = 0,   .gs = 255, .ge = 0,   .bs = 255, .be = 255, .ef = EF_OVER | EF_SCR_R },
+    { .hs = 66.67,  .he = 83.33,  .rs = 0,   .re = 255, .gs = 0,   .ge = 0,   .bs = 255, .be = 255, .ef = EF_OVER | EF_SCR_R },
+    { .hs = 83.33,  .he = 100,    .rs = 255, .re = 255, .gs = 0,   .ge = 0,   .bs = 255, .be = 0,   .ef = EF_OVER | EF_SCR_R },
+    { .hs = 0,      .he = 100,    .rs = 255, .re = 255, .gs = 255, .ge = 255, .bs = 255, .be = 255, .ef = EF_SUBTRACT | EF_PRESS },
+    { .end = 1 },
+};
+
 //Add new LED animations here using one from above as example
 //The last entry must be { .end = 1 }
 //Add the new animation name to the list below following its format
 void *led_setups[] = {
-    leds_press_ice_blue,
-    leds_press_yellow_red,
-    leds_press,
+    leds_rainbow_s_touch,
+    leds_america_scroll_keypress,
+    leds_press_invert_red,
+    leds_press_red,
     leds_press_teal_salmon,
     leds_black_with_teal_stripe,
     leds_rainbow_s,
     leds_rainbow_ns,
     leds_yellow,
+    leds_press_yellow_red,
     leds_red,
     leds_green,
     leds_blue,
