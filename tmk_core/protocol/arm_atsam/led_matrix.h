@@ -98,6 +98,7 @@ uint8_t led_matrix_init(void);
 #define EF_SCR_L        0x00000002  //Scroll left
 #define EF_SCR_R        0x00000004  //Scroll right
 #define EF_SUBTRACT     0x00000008  //Subtract color values
+#define EF_PRESS        0x00000016  //Render on key press
 
 typedef struct led_setup_s {
   float hs;         //Band begin at percent

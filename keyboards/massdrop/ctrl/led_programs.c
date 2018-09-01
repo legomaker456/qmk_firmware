@@ -26,10 +26,30 @@ led_setup_t leds_teal_salmon[] = {
     { .end = 1 },
 };
 
+led_setup_t leds_grey[] = {
+  { .hs = 0, .he = 100, .rs = 49, .re = 49, .gs = 79, .ge = 79, .bs = 79, .be = 79, .ef = EF_NONE },
+  { .end = 1 },
+};
+
 //Yellow
 led_setup_t leds_yellow[] = {
     { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 255, .ge = 255, .bs = 0, .be = 0, .ef = EF_NONE },
     { .end = 1 },
+};
+
+led_setup_t leds_teal[] = {
+  { .hs = 0,  .he = 100,  .rs = 24,  .re = 24,  .gs = 215, .ge = 215, .bs = 204, .be = 204, .ef = EF_NONE },
+  { .end = 1 },
+};
+
+led_setup_t leds_purple[] = {
+  { .hs = 0,  .he = 100,  .rs = 150,   .re = 150, .gs = 0,   .ge = 0,   .bs = 255, .be = 255, .ef = EF_NONE },
+  { .end = 1 },
+};
+
+led_setup_t leds_pink[] = {
+  { .hs = 0,  .he = 100,  .rs = 255, .re = 255, .gs = 0,   .ge = 0,   .bs = 150, .be = 150, .ef = EF_NONE },
+  { .end = 1 },
 };
 
 //Off
@@ -56,6 +76,27 @@ led_setup_t leds_blue[] = {
     { .end = 1 },
 };
 
+//MURICA
+led_setup_t leds_america_scroll[] = {
+  { .hs = 0, .he = 16.67,     .rs = 0, .re = 255, .gs = 0,   .ge = 0,   .bs = 0,   .be = 0,   .ef = EF_OVER | EF_SCR_R },
+  { .hs = 16.67, .he = 33.33, .rs = 255, .re = 0, .gs = 255, .ge = 0, .bs = 255, .be = 0, .ef = EF_OVER | EF_SCR_R },
+  { .hs = 33.33, .he = 50,    .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 0, .be = 255, .ef = EF_OVER | EF_SCR_R },
+  { .hs = 50,    .he = 66.67, .rs = 255, .re = 0, .gs = 0,   .ge = 0,   .bs = 0,   .be = 0,   .ef = EF_OVER | EF_SCR_R },
+  { .hs = 66.67, .he = 83.33, .rs = 0, .re = 255, .gs = 0, .ge = 255, .bs = 0, .be = 255, .ef = EF_OVER | EF_SCR_R },
+  { .hs = 83.33, .he = 100,   .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255, .be = 0, .ef = EF_OVER | EF_SCR_R },
+  { .end = 1 },
+};
+
+led_setup_t leds_america[] = {
+  { .hs = 0, .he = 16.67,     .rs = 255, .re = 255, .gs = 0,   .ge = 0,   .bs = 0,   .be = 0,   .ef = EF_OVER  },
+  { .hs = 16.67, .he = 33.33, .rs = 255, .re = 255, .gs = 255, .ge = 255, .bs = 255, .be = 255, .ef = EF_OVER  },
+  { .hs = 33.33, .he = 50,    .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255, .be = 255, .ef = EF_OVER  },
+  { .hs = 50,    .he = 66.67, .rs = 255, .re = 255, .gs = 0,   .ge = 0,   .bs = 0,   .be = 0,   .ef = EF_OVER  },
+  { .hs = 66.67, .he = 83.33, .rs = 255, .re = 255, .gs = 255, .ge = 255, .bs = 255, .be = 255, .ef = EF_OVER  },
+  { .hs = 83.33, .he = 100,   .rs = 0,   .re = 0,   .gs = 0,   .ge = 0,   .bs = 255, .be = 255, .ef = EF_OVER  },
+  { .end = 1 },
+};
+
 //White
 led_setup_t leds_white[] = {
     { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 255, .ge = 255, .bs = 255, .be = 255, .ef = EF_NONE },
@@ -74,6 +115,12 @@ led_setup_t leds_white_with_red_stripe[] = {
 led_setup_t leds_black_with_red_stripe[] = {
     { .hs = 0, .he = 15, .rs = 0, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_SCR_R },
     { .hs = 15, .he = 30, .rs = 255, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_SCR_R },
+    { .end = 1 },
+};
+
+led_setup_t leds_black_with_teal_stripe[] = {
+    { .hs = 0, .he = 15, .rs = 0, .re = 24, .gs = 0, .ge = 215, .bs = 0, .be = 204, .ef = EF_SCR_R },
+    { .hs = 15,  .he = 30,  .rs = 24,  .re = 0,  .gs = 215, .ge = 0, .bs = 204, .be = 0, .ef = EF_SCR_R },
     { .end = 1 },
 };
 
@@ -104,16 +151,21 @@ led_setup_t leds_rainbow_s[] = {
 //Add the new animation name to the list below following its format
 
 void *led_setups[] = {
+    leds_black_with_teal_stripe,
     leds_rainbow_s,
     leds_rainbow_ns,
-    leds_teal_salmon,
     leds_yellow,
     leds_red,
     leds_green,
     leds_blue,
+    leds_teal,
+    leds_purple,
+    leds_pink,
     leds_white,
     leds_white_with_red_stripe,
     leds_black_with_red_stripe,
+    leds_america,
+    leds_america_scroll,
     leds_off
 };
 

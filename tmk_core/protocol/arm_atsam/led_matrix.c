@@ -447,7 +447,7 @@ uint8_t led_matrix_init(void)
     led_enabled = 1;
     led_animation_id = 0;
     led_lighting_mode = LED_MODE_NORMAL;
-    led_animation_speed = 4.0f;
+    led_animation_speed = 1.0f;
     led_animation_direction = 0;
     led_animation_breathing = 0;
     led_animation_breathe_cur = BREATHE_MIN_STEP;
@@ -506,4 +506,3 @@ void led_matrix_task(void)
         //m15_on; //debug profiling
     }
 }
-
