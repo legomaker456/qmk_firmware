@@ -243,6 +243,7 @@ void led_matrix_prepare(void)
 
 uint8_t led_enabled;
 float led_animation_speed;
+float led_keypress_fade_speed;
 uint8_t led_animation_direction;
 uint8_t led_animation_breathing;
 uint8_t led_animation_breathe_cur;
@@ -256,6 +257,14 @@ uint8_t led_lighting_mode;
 issi3733_led_t *led_cur;
 uint8_t led_per_run = 15;
 float breathe_mult;
+
+float desired_brightness[157] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 32  fields
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 64  fields
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 96  fields
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 128 fields
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0           // 154 fields
+};
 
 void led_matrix_run(led_setup_t *f)
 {
@@ -353,13 +362,31 @@ void led_matrix_run(led_setup_t *f)
                 //Check if LED's px is in current frame
                 if (px < f[fcur].hs) continue;
                 if (px > f[fcur].he) continue;
+
+                uint8_t scan = led_cur->scan;
                 //note: < 0 or > 100 continue
 
                 //Calculate the px within the start-stop percentage for color blending
                 px = (px - f[fcur].hs) / (f[fcur].he - f[fcur].hs);
 
+                if(f[fcur].ef & EF_PRESS)
+                {
+                  float value = desired_brightness[scan];
+                  desired_brightness[scan] -= led_keypress_fade_speed  * value;
+
+                  if(f[fcur].ef & EF_SUBTRACT) {
+                    ro -= ((px * (f[fcur].re - f[fcur].rs)  + f[fcur].rs) * value);// + 0.5;
+                    go -= ((px * (f[fcur].ge - f[fcur].gs)  + f[fcur].gs) * value);// + 0.5;
+                    bo -= ((px * (f[fcur].be - f[fcur].bs)  + f[fcur].bs) * value);// + 0.5;
+                  }
+                  else {
+                    ro += ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
+                    go += ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
+                    bo += ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
+                  }
+                }
                 //Add in any color effects
-                if (f[fcur].ef & EF_OVER)
+                else if (f[fcur].ef & EF_OVER)
                 {
                     ro = (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
                     go = (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
@@ -448,6 +475,7 @@ uint8_t led_matrix_init(void)
     led_animation_id = 0;
     led_lighting_mode = LED_MODE_NORMAL;
     led_animation_speed = 1.0f;
+    led_keypress_fade_speed = 0.0030f;
     led_animation_direction = 0;
     led_animation_breathing = 0;
     led_animation_breathe_cur = BREATHE_MIN_STEP;

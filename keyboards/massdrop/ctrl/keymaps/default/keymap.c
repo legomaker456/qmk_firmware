@@ -20,11 +20,11 @@ enum ctrl_keycodes {
     DBG_KBD,            //DEBUG Toggle Keyboard Prints
     DBG_MOU,            //DEBUG Toggle Mouse Prints
     C_SHRUG,            // ¯\_(ツ)_/¯
+    L_KFSI,             // LED keypress fade increase
+    L_KFSD,             // LED keypress fade decrease
 };
 
 #define TG_NKRO MAGIC_TOGGLE_NKRO //Toggle 6KRO / NKRO mode
-#define KC_SHRUG_HAND UC(0x00AF)
-#define KC_SHRUG_FACE UC(0x30C4)
 
 keymap_config_t keymap_config;
 
@@ -39,10 +39,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [1] = LAYOUT(
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_MUTE, KC_TRNS, KC_TRNS, \
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_MPLY, KC_MSTP, KC_VOLU, \
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, L_KFSD,  L_KFSI,  KC_TRNS,   KC_MPLY, KC_MSTP, KC_VOLU, \
         L_T_BR,  L_PSD,   L_BRI,   L_PSI,   KC_TRNS, KC_TRNS, KC_TRNS, U_T_AUTO,U_T_AGCR,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_MPRV, KC_MNXT, KC_VOLD, \
         L_T_PTD, L_PTP,   L_BRD,   L_PTN,   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
-        KC_TRNS, L_T_MD,  L_T_ONF, KC_TRNS, KC_TRNS, KC_TRNS, TG_NKRO, KC_TRNS, KC_TRNS, KC_TRNS, C_SHRUG, RGB_MODE_SNAKE,                              KC_TRNS, \
+        KC_TRNS, L_T_MD,  L_T_ONF, KC_TRNS, KC_TRNS, KC_TRNS, TG_NKRO, KC_TRNS, KC_TRNS, KC_TRNS, C_SHRUG, KC_TRNS,                              KC_TRNS, \
         KC_TRNS, KC_TRNS, KC_TRNS,                  KC_TRNS,                             KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_TRNS, KC_TRNS, KC_TRNS \
     ),
     /*
@@ -75,7 +75,11 @@ void matrix_scan_user(void) {
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-
+    // thanks to https://github.com/DarkMio
+    if(record->event.pressed) {
+        uint16_t scan_code = record->event.key.row * 15 + record->event.key.col;
+        desired_brightness[scan_code] = 1.0f;
+    }
     switch (keycode) {
         case C_SHRUG:
             if (record->event.pressed) {
@@ -205,6 +209,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 CDC_print("Debug mouse ");
                 CDC_print(debug_mouse ? "enabled" : "disabled");
                 CDC_print("\r\n");
+            }
+            return false;
+        case L_KFSI:
+            if (record->event.pressed) {
+                led_keypress_fade_speed += KEY_PRESS_FADE_STEP;
+            }
+            return false;
+        case L_KFSD:
+            if (record->event.pressed) {
+                led_keypress_fade_speed -= KEY_PRESS_FADE_STEP;
+                if (led_keypress_fade_speed < 0.0005) led_keypress_fade_speed = 0.0005;
             }
             return false;
         default:

@@ -42,6 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define V5_CAT                      2200        //5V catastrophic level (Host USB port potential to shut down)
 
 #define ANIMATION_SPEED_STEP        1
+#define KEY_PRESS_FADE_STEP         .0005
 
 #define BREATHE_MIN_STEP            40
 #define BREATHE_MAX_STEP            255

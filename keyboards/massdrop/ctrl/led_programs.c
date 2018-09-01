@@ -26,9 +26,11 @@ led_setup_t leds_teal_salmon[] = {
     { .end = 1 },
 };
 
-led_setup_t leds_grey[] = {
-  { .hs = 0, .he = 100, .rs = 49, .re = 49, .gs = 79, .ge = 79, .bs = 79, .be = 79, .ef = EF_NONE },
-  { .end = 1 },
+led_setup_t leds_press_teal_salmon[] = {
+    { .hs = 0, .he = 100, .rs = 24, .re = 24, .gs = 215, .ge = 215, .bs = 204, .be = 204, .ef = EF_NONE },
+    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_PRESS },
+    { .hs = 0, .he = 100, .rs = 0, .re = 0, .gs = 101, .ge = 101, .bs = 86, .be = 86, .ef = EF_PRESS | EF_SUBTRACT },
+    { .end = 1 },
 };
 
 //Yellow
@@ -55,6 +57,24 @@ led_setup_t leds_pink[] = {
 //Off
 led_setup_t leds_off[] = {
     { .hs = 0, .he = 100, .rs = 0, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_NONE },
+    { .end = 1 },
+};
+
+led_setup_t leds_press_yellow_red[] = {
+    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 255, .ge = 255, .bs = 0, .be = 0, .ef = EF_NONE },
+    { .hs = 0, .he = 100, .rs = 0, .re = 0, .gs = 255, .ge = 255, .bs = 0, .be = 0, .ef = EF_PRESS | EF_SUBTRACT },
+    { .end = 1 },
+};
+
+led_setup_t leds_press_ice_blue[] = {
+    { .hs = 0, .he = 100, .rs = 220, .re = 220, .gs = 243, .ge = 243, .bs = 255, .be = 255, .ef = EF_NONE },
+    { .hs = 0, .he = 100, .rs = 183, .re = 183, .gs = 119, .ge = 119, .bs = 92, .be = 92, .ef = EF_PRESS | EF_SUBTRACT },
+    { .end = 1 },
+};
+
+led_setup_t leds_press[] = {
+    { .hs = 0, .he = 100, .rs = 0, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_NONE },
+    { .hs = 0, .he = 100, .rs = 255, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_PRESS },
     { .end = 1 },
 };
 
@@ -113,14 +133,14 @@ led_setup_t leds_white_with_red_stripe[] = {
 
 //Black with moving red stripe
 led_setup_t leds_black_with_red_stripe[] = {
-    { .hs = 0, .he = 15, .rs = 0, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_SCR_R },
-    { .hs = 15, .he = 30, .rs = 255, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_SCR_R },
+    { .hs = 0, .he = 15, .rs = 0, .re = 255, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_OVER | EF_SCR_R },
+    { .hs = 15, .he = 30, .rs = 255, .re = 0, .gs = 0, .ge = 0, .bs = 0, .be = 0, .ef = EF_OVER | EF_SCR_R },
     { .end = 1 },
 };
 
 led_setup_t leds_black_with_teal_stripe[] = {
-    { .hs = 0, .he = 15, .rs = 0, .re = 24, .gs = 0, .ge = 215, .bs = 0, .be = 204, .ef = EF_SCR_R },
-    { .hs = 15,  .he = 30,  .rs = 24,  .re = 0,  .gs = 215, .ge = 0, .bs = 204, .be = 0, .ef = EF_SCR_R },
+    { .hs = 0, .he = 15, .rs = 0, .re = 24, .gs = 0, .ge = 215, .bs = 0, .be = 204, .ef = EF_OVER | EF_SCR_R },
+    { .hs = 15,  .he = 30,  .rs = 24,  .re = 0,  .gs = 215, .ge = 0, .bs = 204, .be = 0, .ef = EF_OVER | EF_SCR_R },
     { .end = 1 },
 };
 
@@ -149,8 +169,11 @@ led_setup_t leds_rainbow_s[] = {
 //Add new LED animations here using one from above as example
 //The last entry must be { .end = 1 }
 //Add the new animation name to the list below following its format
-
 void *led_setups[] = {
+    leds_press_ice_blue,
+    leds_press_yellow_red,
+    leds_press,
+    leds_press_teal_salmon,
     leds_black_with_teal_stripe,
     leds_rainbow_s,
     leds_rainbow_ns,

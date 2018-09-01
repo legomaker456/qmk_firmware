@@ -120,9 +120,12 @@ extern uint8_t gcr_breathe;
 extern uint8_t gcr_actual;
 extern uint8_t gcr_actual_last;
 
+extern float desired_brightness[];
+
 extern uint8_t led_animation_id;
 extern uint8_t led_enabled;
 extern float led_animation_speed;
+extern float led_keypress_fade_speed;
 extern uint8_t led_lighting_mode;
 extern uint8_t led_animation_direction;
 extern uint8_t led_animation_breathing;
