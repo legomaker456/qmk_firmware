@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include <string.h>
 
 enum ctrl_keycodes {
     L_BRI = SAFE_RANGE, //LED Brightness Increase
@@ -19,6 +20,7 @@ enum ctrl_keycodes {
     DBG_MTRX,           //DEBUG Toggle Matrix Prints
     DBG_KBD,            //DEBUG Toggle Keyboard Prints
     DBG_MOU,            //DEBUG Toggle Mouse Prints
+    C_SIG,              // signature
     C_SHRUG,            // ¯\_(ツ)_/¯
     L_KFSI,             // LED keypress fade increase
     L_KFSD,             // LED keypress fade decrease
@@ -28,13 +30,21 @@ enum ctrl_keycodes {
 
 #define TG_NKRO MAGIC_TOGGLE_NKRO //Toggle 6KRO / NKRO mode
 
+#define _QWERTY 0
+#define _DVORAK 1
+#define _COLEMAK 2
+#define _FUNCTION 5
+
 keymap_config_t keymap_config;
 
-uint16_t active_layer=0;
-const uint16_t MAX_ACTIVE_LAYER=1;
+uint8_t active_layer=0;
+//maps active_layer to led_setups
+const uint8_t active_layer_led_config[355]={0,5,16};
+
+const uint8_t MAX_ACTIVE_LAYER=2;
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // QUERTY
-    [0] = LAYOUT(
+    [_QWERTY] = LAYOUT(
         KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,             KC_PSCR, KC_SLCK, KC_PAUS, \
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC,   KC_INS,  KC_HOME, KC_PGUP, \
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS,   KC_DEL,  KC_END,  KC_PGDN, \
@@ -43,7 +53,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LCTL, KC_LALT, KC_LGUI,                  KC_SPC,                              KC_RALT, MO(5),   KC_APP,  KC_RCTL,            KC_LEFT, KC_DOWN, KC_RGHT \
     ),
     // DVORAK
-    [1] = LAYOUT(
+    [_DVORAK] = LAYOUT(
         KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,             KC_PSCR, KC_SLCK, KC_PAUS, \
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_LBRC, KC_RBRC,  KC_BSPC,  KC_INS,  KC_HOME, KC_PGUP, \
         KC_TAB,  KC_QUOT, KC_COMM, KC_DOT,  KC_P,    KC_Y,    KC_F,    KC_G,    KC_C,    KC_R,    KC_L,    KC_SLSH, KC_EQL,   KC_BSLS,  KC_DEL,  KC_END,  KC_PGDN, \
@@ -52,7 +62,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LCTL, KC_LALT, KC_LGUI,                  KC_SPC,                              KC_RALT, MO(5),   KC_APP,  KC_RCTL,            KC_LEFT, KC_DOWN, KC_RGHT \
     ),
     // COLEMAK
-    [2] = LAYOUT(
+    [_COLEMAK] = LAYOUT(
         KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,             KC_PSCR, KC_SLCK, KC_PAUS, \
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC,   KC_INS,  KC_HOME, KC_PGUP, \
         KC_TAB,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_G,    KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_LBRC, KC_RBRC, KC_BSLS,   KC_DEL,  KC_END,  KC_PGDN, \
@@ -60,13 +70,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,                              KC_UP, \
         KC_LCTL, KC_LALT, KC_LGUI,                  KC_SPC,                              KC_RALT, MO(5),   KC_APP,  KC_RCTL,            KC_LEFT, KC_DOWN, KC_RGHT \
     ),
-    [5] = LAYOUT(
-        DF(0),   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_MUTE, KC_TRNS, KC_TRNS, \
+    [_FUNCTION] = LAYOUT(
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_MUTE, KC_TRNS, KC_TRNS, \
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, L_KFSD,  L_KFSI,  KC_TRNS,   KC_MPLY, KC_MSTP, KC_VOLU, \
         L_T_BR,  L_PSD,   L_BRI,   L_PSI,   KC_TRNS, KC_TRNS, KC_TRNS, U_T_AUTO,U_T_AGCR,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_MPRV, KC_MNXT, KC_VOLD, \
         L_T_PTD, L_PTP,   L_BRD,   L_PTN,   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
-        KC_TRNS, L_T_MD,  L_T_ONF, KC_TRNS, KC_TRNS, KC_TRNS, TG_NKRO, KC_TRNS, KC_TRNS, KC_TRNS, C_SHRUG, KC_TRNS,                              DF(1), \
-        KC_TRNS, KC_TRNS, KC_TRNS,                  KC_TRNS,                             KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_TRNS, DF(2), KC_TRNS \
+        KC_TRNS, L_T_MD,  L_T_ONF, KC_TRNS, KC_TRNS, KC_TRNS, TG_NKRO, KC_TRNS, KC_TRNS, KC_TRNS, C_SIG,   KC_TRNS,                              LY_UP, \
+        KC_TRNS, KC_TRNS, KC_TRNS,                  KC_TRNS,                             KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_TRNS, LY_DOWN, KC_TRNS \
     ),
     /*
     [X] = LAYOUT(
@@ -106,10 +116,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case C_SHRUG:
             if (record->event.pressed) {
-                process_unicode(UC_TU, record);
-                send_string_with_delay_P("asdf", 5);
+              //TODO
             }
             return false;
+        case C_SIG:
+            if (record->event.pressed) {
+                send_string_with_delay_P("http"SS_LSFT(";")"//matsprehn.com/", 5);
+            }
         case L_BRI:
             if (record->event.pressed) {
                 if (LED_GCR_STEP > LED_GCR_MAX - gcr_desired) gcr_desired = LED_GCR_MAX;
@@ -128,12 +141,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 if (led_animation_id == led_setups_count - 1) led_animation_id = 0;
                 else led_animation_id++;
+                memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
         case L_PTP:
             if (record->event.pressed) {
                 if (led_animation_id == 0) led_animation_id = led_setups_count - 1;
                 else led_animation_id--;
+                memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
         case L_PSI:
@@ -244,6 +259,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 led_keypress_fade_speed -= KEY_PRESS_FADE_STEP;
                 if (led_keypress_fade_speed < 0.0005) led_keypress_fade_speed = 0.0005;
+            }
+            return false;
+
+        case LY_UP:
+            if (record->event.pressed) {
+                layer_off(active_layer);
+                active_layer += 1;
+                if (active_layer > MAX_ACTIVE_LAYER) active_layer = MAX_ACTIVE_LAYER;
+                layer_on(active_layer);
+                led_animation_id = active_layer_led_config[active_layer];
+                memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
+            }
+            return false;
+
+        case LY_DOWN:
+            if (record->event.pressed) {
+              layer_off(active_layer);
+              active_layer -= 1;
+              if (active_layer < 0) active_layer = 0;
+              layer_on(active_layer);
+              led_animation_id = active_layer_led_config[active_layer];
+              memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
 
