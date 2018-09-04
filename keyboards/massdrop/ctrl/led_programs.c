@@ -192,7 +192,25 @@ led_setup_t leds_rainbow_s_touch[] = {
 //Add new LED animations here using one from above as example
 //The last entry must be { .end = 1 }
 //Add the new animation name to the list below following its format
+led_setup_t led_reactive_salmon_black[] = {
+  { .hs = 0, .he = 100, .rs = 0, .gs = 0, .bs = 0, .re = 255, .ge = 68, .be = 124, .ef = EF_NONE},
+  { .end = 1 }
+};
+
+led_setup_t led_reactive_salmon_teal[] = {
+  { .hs = 0, .he = 100, .rs = 0, .gs = 30, .bs = 25, .re = 255, .ge = 114, .be = 118, .ef = EF_NONE},
+  { .end = 1 }
+};
+
+led_setup_t leds_reactive_teal[] = {
+    { .hs = 0, .he = 100, .rs = 0, .re = 24, .gs = 0, .ge = 215, .bs = 0, .be = 204, .ef = EF_NONE },
+    { .end = 1 },
+};
+
 void *led_setups[] = {
+    leds_reactive_teal,
+    led_reactive_salmon_teal,
+    led_reactive_salmon_black,
     leds_press_teal_salmon,
     leds_rainbow_s,
     leds_rainbow_ns,

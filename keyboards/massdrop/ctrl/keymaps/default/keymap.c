@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include <string.h>
+#include <stdlib.h>
 
 enum ctrl_keycodes {
     L_BRI = SAFE_RANGE, //LED Brightness Increase
@@ -12,6 +13,7 @@ enum ctrl_keycodes {
     L_T_ONF,            //LED Toggle On / Off
     L_ON,               //LED On
     L_OFF,              //LED Off
+    L_MODE,             //LED change mode
     L_T_BR,             //LED Toggle Breath Effect
     L_T_PTD,            //LED Toggle Scrolling Pattern Direction
     U_T_AUTO,           //USB Extra Port Toggle Auto Detect / Always Active
@@ -75,7 +77,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, L_KFSD,  L_KFSI,  KC_TRNS,   KC_MPLY, KC_MSTP, KC_VOLU, \
         L_T_BR,  L_PSD,   L_BRI,   L_PSI,   KC_TRNS, KC_TRNS, KC_TRNS, U_T_AUTO,U_T_AGCR,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,   KC_MPRV, KC_MNXT, KC_VOLD, \
         L_T_PTD, L_PTP,   L_BRD,   L_PTN,   KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, \
-        KC_TRNS, L_T_MD,  L_T_ONF, KC_TRNS, KC_TRNS, KC_TRNS, TG_NKRO, KC_TRNS, KC_TRNS, KC_TRNS, C_SIG,   KC_TRNS,                              LY_UP, \
+        KC_TRNS, L_T_MD,  L_T_ONF, KC_TRNS, KC_TRNS, KC_TRNS, TG_NKRO, L_MODE, KC_TRNS, KC_TRNS, C_SIG,   KC_TRNS,                              LY_UP, \
         KC_TRNS, KC_TRNS, KC_TRNS,                  KC_TRNS,                             KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,            KC_TRNS, LY_DOWN, KC_TRNS \
     ),
     /*
@@ -110,8 +112,26 @@ void matrix_scan_user(void) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // thanks to https://github.com/DarkMio
     if(record->event.pressed) {
-        uint16_t scan_code = record->event.key.row * 15 + record->event.key.col;
-        desired_brightness[scan_code] = 1.0f;
+        if(keycode != KC_CAPS && keycode != KC_SLCK) {
+            uint16_t scan_code = record->event.key.row * 15 + record->event.key.col;
+            // char ddd[4];
+            // itoa(scan_code, ddd, 10);
+            // send_string_with_delay_P(ddd, 5);
+            // we can just modify the read_buffer, since the LEDs are set
+            // from read buffer and the led job then fills the write buffer.
+            desired_interpolation[read_buffer][scan_code] = 1.0f;
+            desired_interpolation[write_buffer][scan_code] = 1.0f;
+            if (
+              scan_code == 0      //esc
+              || scan_code == 30  //tab
+              || scan_code == 78  //space
+              || scan_code == 139 //return
+
+            ) {
+              desired_interpolation[read_buffer][157] = 1.0f;
+              desired_interpolation[write_buffer][157] = 1.0f;
+            }
+        }
     }
     switch (keycode) {
         case C_SHRUG:
@@ -141,14 +161,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 if (led_animation_id == led_setups_count - 1) led_animation_id = 0;
                 else led_animation_id++;
-                memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
+                // memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
         case L_PTP:
             if (record->event.pressed) {
                 if (led_animation_id == 0) led_animation_id = led_setups_count - 1;
                 else led_animation_id--;
-                memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
+                // memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
         case L_PSI:
@@ -200,6 +220,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case L_T_PTD:
             if (record->event.pressed) {
                 led_animation_direction = !led_animation_direction;
+            }
+            return false;
+        case L_MODE:
+            if(record->event.pressed) {
+               led_anim_mode = led_anim_mode ? 0 : 1;
             }
             return false;
         case U_T_AUTO:
@@ -269,7 +294,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 if (active_layer > MAX_ACTIVE_LAYER) active_layer = MAX_ACTIVE_LAYER;
                 layer_on(active_layer);
                 led_animation_id = active_layer_led_config[active_layer];
-                memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
+                // memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
 
@@ -280,7 +305,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
               if (active_layer < 0) active_layer = 0;
               layer_on(active_layer);
               led_animation_id = active_layer_led_config[active_layer];
-              memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
+              // memset(desired_brightness, 0, 157 * sizeof(desired_brightness[0]));
             }
             return false;
 

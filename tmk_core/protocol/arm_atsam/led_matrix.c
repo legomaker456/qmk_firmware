@@ -258,20 +258,152 @@ issi3733_led_t *led_cur;
 uint8_t led_per_run = 15;
 float breathe_mult;
 
-float desired_brightness[157] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 32  fields
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 64  fields
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 96  fields
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 128 fields
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0           // 154 fields
-};
+uint8_t led_anim_mode = 0;
+
+float desired_interpolation[][158] = {{0}, {0}};
+uint8_t write_buffer = 0;
+uint8_t read_buffer = 1;
+
+void led_gradient_op(uint8_t fcur, uint8_t fmax, led_setup_t *f, float* rgb_out) {
+  float px;
+  for (fcur = 0; fcur < fmax; fcur++)
+  {
+      px = led_cur->px;
+      float pxmod;
+      pxmod = (float)(disp.frame % (uint32_t)(1000.0f / led_animation_speed)) / 10.0f * led_animation_speed;
+
+      //Add in any moving effects
+      if ((!led_animation_direction && f[fcur].ef & EF_SCR_R) || (led_animation_direction && (f[fcur].ef & EF_SCR_L)))
+      {
+          pxmod *= 100.0f;
+          pxmod = (uint32_t)pxmod % 10000;
+          pxmod /= 100.0f;
+
+          px -= pxmod;
+
+          if (px > 100) px -= 100;
+          else if (px < 0) px += 100;
+      }
+      else if ((!led_animation_direction && f[fcur].ef & EF_SCR_L) || (led_animation_direction && (f[fcur].ef & EF_SCR_R)))
+      {
+          pxmod *= 100.0f;
+          pxmod = (uint32_t)pxmod % 10000;
+          pxmod /= 100.0f;
+          px += pxmod;
+
+          if (px > 100) px -= 100;
+          else if (px < 0) px += 100;
+      }
+
+      //Check if LED's px is in current frame
+      if (px < f[fcur].hs) continue;
+      if (px > f[fcur].he) continue;
+
+      //note: < 0 or > 100 continue
+
+      //Calculate the px within the start-stop percentage for color blending
+      px = (px - f[fcur].hs) / (f[fcur].he - f[fcur].hs);
+
+      // uint8_t scan_code = led_cur->scan;
+
+      // if(f[fcur].ef & EF_PRESS)
+      // {
+      //   float value = desired_interpolation[read_buffer][scan_code];
+      //   desired_interpolation[read_buffer][scan_code] -= led_keypress_fade_speed  * value;
+      //   if(f[fcur].ef & EF_SUBTRACT) {
+      //       rgb_out[0] -= ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
+      //       rgb_out[1] -= ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
+      //       rgb_out[2] -= ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
+      //   }
+      //   else if (f[fcur].ef & EF_OVER && value > 0.25f)
+      //   {
+      //       rgb_out[0] = ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
+      //       rgb_out[1] = ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
+      //       rgb_out[2] = ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
+      //   }
+      //   else
+      //   {
+      //       rgb_out[0] += ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
+      //       rgb_out[1] += ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
+      //       rgb_out[2] += ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
+      //   }
+      // }
+      // // Add in any color effects
+      // else
+       if (f[fcur].ef & EF_OVER)
+      {
+          rgb_out[0] = (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
+          rgb_out[1] = (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
+          rgb_out[2] = (px * (f[fcur].be - f[fcur].bs)) + f[fcur].bs;// + 0.5;
+      }
+      else if (f[fcur].ef & EF_SUBTRACT)
+      {
+          rgb_out[0] -= (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
+          rgb_out[1] -= (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
+          rgb_out[2] -= (px * (f[fcur].be - f[fcur].bs)) + f[fcur].bs;// + 0.5;
+      }
+      else
+      {
+          rgb_out[0] += (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
+          rgb_out[1] += (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
+          rgb_out[2] += (px * (f[fcur].be - f[fcur].bs)) + f[fcur].bs;// + 0.5;
+      }
+  }
+}
+
+void led_react_op(uint8_t fcur, uint8_t fmax, uint8_t scan, led_setup_t *f, float* rgb_out) {
+    // currently maps onto escape, might be useful to just map
+    // it onto its own place or something :shrug:
+    if(scan == 255) {
+        scan = 157;
+    }
+    float value = desired_interpolation[read_buffer][scan];
+    // the scan point to the left of this position
+    uint8_t r_scan = scan;
+    // the wiring is a bit odd, so here are special cases
+    switch(scan) {
+      case 154: // left arrow key -> ctrl
+        r_scan = 82;
+        break;
+      case 140: // up arrow -> shift
+        r_scan = 153;
+        break;
+      case 142: // pgup -> home
+        r_scan = 112;
+        break;
+      case 141: // pgdn -> end
+        r_scan = 127;
+        break;
+      case 157: //mapped for underglows
+        break;
+      default:
+        // if we're on the higher row of wiring (basically the right)
+        // side of the keyboard, we need to jump down a row
+        if(scan % 15 == 0 && scan >= 90) {
+            r_scan -= 83;
+        } else if(scan % 15 != 0) {
+            r_scan -= 1;
+        } // the remaining case here would be on the left most position,
+        // in which case we just do nothing.
+    }
+    // get your neighbours interpolation
+    float r_value = desired_interpolation[read_buffer][r_scan];
+    // now fill yourself up
+    value = max(r_value * (1- led_keypress_fade_speed), value);
+    // calculate a new interpolation step
+    desired_interpolation[write_buffer][scan] = value - led_keypress_fade_speed * value;
+    // Act on LED
+    rgb_out[0] = (f[0].rs) + value * (f[0].re - f[0].rs);
+    rgb_out[1] = (f[0].gs) + value * (f[0].ge - f[0].gs);
+    rgb_out[2] = (f[0].bs) + value * (f[0].be - f[0].bs);
+}
+
 
 void led_matrix_run(led_setup_t *f)
 {
     float ro;
     float go;
     float bo;
-    float px;
     uint8_t led_this_run = 0;
 
     if (led_cur == 0) //Denotes start of new processing cycle in the case of chunked processing
@@ -295,6 +427,12 @@ void led_matrix_run(led_setup_t *f)
             breathe_mult = 0.000015 * led_animation_breathe_cur * led_animation_breathe_cur;
             if (breathe_mult > 1) breathe_mult = 1;
             else if (breathe_mult < 0) breathe_mult = 0;
+        }
+        if(led_anim_mode == 0 && disp.frame % 5 == 0) {
+            // buffer swap when we render a new frame (and only then!)
+            uint8_t temp = write_buffer;
+            write_buffer = read_buffer;
+            read_buffer = temp;
         }
     }
 
@@ -329,89 +467,19 @@ void led_matrix_run(led_setup_t *f)
         }
         else
         {
-            //Act on LED
+            float res[3] = {0, 0, 0};
             for (fcur = 0; fcur < fmax; fcur++)
+            if(led_anim_mode)
             {
-                px = led_cur->px;
-                float pxmod;
-                pxmod = (float)(disp.frame % (uint32_t)(1000.0f / led_animation_speed)) / 10.0f * led_animation_speed;
-
-                //Add in any moving effects
-                if ((!led_animation_direction && f[fcur].ef & EF_SCR_R) || (led_animation_direction && (f[fcur].ef & EF_SCR_L)))
-                {
-                    pxmod *= 100.0f;
-                    pxmod = (uint32_t)pxmod % 10000;
-                    pxmod /= 100.0f;
-
-                    px -= pxmod;
-
-                    if (px > 100) px -= 100;
-                    else if (px < 0) px += 100;
-                }
-                else if ((!led_animation_direction && f[fcur].ef & EF_SCR_L) || (led_animation_direction && (f[fcur].ef & EF_SCR_R)))
-                {
-                    pxmod *= 100.0f;
-                    pxmod = (uint32_t)pxmod % 10000;
-                    pxmod /= 100.0f;
-                    px += pxmod;
-
-                    if (px > 100) px -= 100;
-                    else if (px < 0) px += 100;
-                }
-
-                //Check if LED's px is in current frame
-                if (px < f[fcur].hs) continue;
-                if (px > f[fcur].he) continue;
-
-                //note: < 0 or > 100 continue
-
-                //Calculate the px within the start-stop percentage for color blending
-                px = (px - f[fcur].hs) / (f[fcur].he - f[fcur].hs);
-
-                if(f[fcur].ef & EF_PRESS)
-                {
-                  uint8_t scan = led_cur->scan;
-                  float value = desired_brightness[scan];
-                  desired_brightness[scan] -= led_keypress_fade_speed  * value;
-                  if(f[fcur].ef & EF_SUBTRACT) {
-                      ro -= ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
-                      go -= ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
-                      bo -= ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
-                  }
-                  else if (f[fcur].ef & EF_OVER && value > 0.25f)
-                  {
-                      ro = ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
-                      go = ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
-                      bo = ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
-                  }
-                  else
-                  {
-                      ro += ((px * (f[fcur].re - f[fcur].rs) + f[fcur].rs) * value);// + 0.5;
-                      go += ((px * (f[fcur].ge - f[fcur].gs) + f[fcur].gs) * value);// + 0.5;
-                      bo += ((px * (f[fcur].be - f[fcur].bs) + f[fcur].bs) * value);// + 0.5;
-                  }
-                }
-                // Add in any color effects
-                else if (f[fcur].ef & EF_OVER)
-                {
-                    ro = (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
-                    go = (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
-                    bo = (px * (f[fcur].be - f[fcur].bs)) + f[fcur].bs;// + 0.5;
-                }
-                else if (f[fcur].ef & EF_SUBTRACT)
-                {
-                    ro -= (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
-                    go -= (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
-                    bo -= (px * (f[fcur].be - f[fcur].bs)) + f[fcur].bs;// + 0.5;
-                }
-                else
-                {
-                    ro += (px * (f[fcur].re - f[fcur].rs)) + f[fcur].rs;// + 0.5;
-                    go += (px * (f[fcur].ge - f[fcur].gs)) + f[fcur].gs;// + 0.5;
-                    bo += (px * (f[fcur].be - f[fcur].bs)) + f[fcur].bs;// + 0.5;
-                }
+                led_gradient_op(fcur, fmax, f, res);
+            } else {
+                led_react_op(fcur, fmax, led_cur->scan, f, res);
             }
+            ro = res[0];
+            go = res[1];
+            bo = res[2];
         }
+
 
         //Clamp values 0-255
         if (ro > 255) ro = 255; else if (ro < 0) ro = 0;
@@ -428,7 +496,6 @@ void led_matrix_run(led_setup_t *f)
         *led_cur->rgb.r = (uint8_t)ro;
         *led_cur->rgb.g = (uint8_t)go;
         *led_cur->rgb.b = (uint8_t)bo;
-
 #ifdef USB_LED_INDICATOR_ENABLE
         if (keyboard_leds())
         {
@@ -481,7 +548,7 @@ uint8_t led_matrix_init(void)
     led_animation_id = 0;
     led_lighting_mode = LED_MODE_NORMAL;
     led_animation_speed = 1.0f;
-    led_keypress_fade_speed = 0.0030f;
+    led_keypress_fade_speed = 0.10f;
     led_animation_direction = 0;
     led_animation_breathing = 0;
     led_animation_breathe_cur = BREATHE_MIN_STEP;
